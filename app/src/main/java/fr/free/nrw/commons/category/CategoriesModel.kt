@@ -44,11 +44,11 @@ class CategoriesModel @Inject constructor(
         //And that item does not equal the current year or previous year
         //And if it is an irrelevant category such as Media_needing_categories_as_of_16_June_2017(Issue #750)
         //Check if the year in the form of XX(X)0s is relevant, i.e. in the 2000s or 2010s as stated in Issue #1029
-        return item.matches(".*(19|20)\\d{2}.*".toRegex())
+        return (item.matches(".*(19|20)\\d{2}.*".toRegex())
                 && !item.contains(yearInString)
                 && !item.contains(prevYearInString)
                 && (item.matches("(.*)needing(.*)".toRegex())
-                    || item.matches("(.*)taken on(.*)".toRegex()))
+                    || item.matches("(.*)taken on(.*)".toRegex())))
                 || (item.matches(".*0s.*".toRegex())
                     && !item.matches(".*(200|201|202)0s.*".toRegex()))
     }
