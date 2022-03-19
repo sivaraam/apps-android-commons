@@ -154,56 +154,6 @@ class CategoryClientTest {
             .assertValues(emptyList())
     }
 
-    @Test
-    fun checkIrrelevantCategoryIsFilteredOut() {
-        val mockResponse = withMockResponse("Category:Photographs taken on 2015-11-08")
-        whenever(categoryInterface.searchCategories(anyString(), anyInt(), anyInt()))
-            .thenReturn(Single.just(mockResponse))
-        categoryClient.searchCategories("Photo", 10)
-            .test()
-            .assertValues(emptyList())
-    }
-
-    @Test
-    fun checkIrrelevantCategoryIsFilteredOut2() {
-        val mockResponse = withMockResponse("Category:Media needing categories as of 5 June 2017")
-        whenever(categoryInterface.searchCategories(anyString(), anyInt(), anyInt()))
-            .thenReturn(Single.just(mockResponse))
-        categoryClient.searchCategories("Media", 10)
-            .test()
-            .assertValues(emptyList())
-    }
-
-    @Test
-    fun checkOldYearCategoriesAreFilteredOut() {
-        val mockResponse = withMockResponse("Category:1970s")
-        whenever(categoryInterface.searchCategories(anyString(), anyInt(), anyInt()))
-            .thenReturn(Single.just(mockResponse))
-        categoryClient.searchCategories("19", 10)
-            .test()
-            .assertValues(emptyList())
-    }
-
-    @Test
-    fun checkRecentYearCategoriesAreNotFilteredOut() {
-        val mockResponse = withMockResponse("Category:2020s")
-        whenever(categoryInterface.searchCategories(anyString(), anyInt(), anyInt()))
-            .thenReturn(Single.just(mockResponse))
-        categoryClient.searchCategories("20", 10)
-            .test()
-            .assertValues(listOf(CategoryItem("2020s", "", "", false)))
-    }
-
-    @Test
-    fun checkNotAllCategoriesWithDateAreFilteredOut() {
-        val mockResponse = withMockResponse("Category:Amavenita (ship, 2014)")
-        whenever(categoryInterface.searchCategories(anyString(), anyInt(), anyInt()))
-            .thenReturn(Single.just(mockResponse))
-        categoryClient.searchCategories("Amav", 10)
-            .test()
-            .assertValues(listOf(CategoryItem("Amavenita (ship, 2014)", "", "", false)))
-    }
-
     private fun withMockResponse(title: String): MwQueryResponse? {
         val mwQueryPage: MwQueryPage = mock()
         whenever(mwQueryPage.title()).thenReturn(title)

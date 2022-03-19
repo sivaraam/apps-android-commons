@@ -3,14 +3,17 @@ package fr.free.nrw.commons.upload
 import categoryItem
 import com.nhaarman.mockitokotlin2.*
 import fr.free.nrw.commons.R
+import fr.free.nrw.commons.category.CategoryItem
 import fr.free.nrw.commons.repository.UploadRepository
 import fr.free.nrw.commons.upload.categories.CategoriesContract
 import fr.free.nrw.commons.upload.categories.CategoriesPresenter
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.schedulers.TestScheduler
 import media
 import org.junit.Before
 import org.junit.Test
+import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.powermock.reflect.Whitebox
@@ -119,6 +122,97 @@ class CategoriesPresenterTest {
         verify(view).showError(R.string.no_categories_found)
         verifyNoMoreInteractions(view)
     }
+
+    @Test
+    fun `check irrelevant category is filtered out`() {
+        val nonEmptyCaptionUploadItem = mock<UploadItem>()
+        whenever(nonEmptyCaptionUploadItem.uploadMediaDetails)
+            .thenReturn(listOf(UploadMediaDetail(captionText = "nonEmpty")))
+        val emptyCaptionUploadItem = mock<UploadItem>()
+        whenever(emptyCaptionUploadItem.uploadMediaDetails)
+            .thenReturn(listOf(UploadMediaDetail(captionText = "")))
+        whenever(repository.uploads).thenReturn(
+            listOf(
+                nonEmptyCaptionUploadItem,
+                emptyCaptionUploadItem
+            )
+        )
+        whenever(repository.searchAll("Photo", listOf("nonEmpty"), repository.selectedDepictions))
+            .thenReturn(
+                Observable.just(
+                    listOf(
+                        categoryItem("Photographs taken randomly"),
+                        categoryItem("Photographs taken on 2015-11-08")
+                    )
+                )
+            )
+
+        categoriesPresenter.searchForCategories("Photo")
+        testScheduler.triggerActions()
+        verify(view).showProgress(true)
+        verify(view).showError(null)
+        verify(view).setCategories(null)
+        verify(view).setCategories(listOf(
+            categoryItem("Photographs taken randomly", "", "", false)))
+        verify(view).showProgress(false)
+        verifyNoMoreInteractions(view)
+    }
+//
+//    @Test
+//    fun checkIrrelevantCategoryIsFilteredOut2() {
+//        val mockResponse = withMockResponse("Category:Media needing categories as of 5 June 2017")
+//        whenever(categoryInterface.searchCategories(
+//            ArgumentMatchers.anyString(),
+//            ArgumentMatchers.anyInt(),
+//            ArgumentMatchers.anyInt()
+//        ))
+//            .thenReturn(Single.just(mockResponse))
+//        categoryClient.searchCategories("Media", 10)
+//            .test()
+//            .assertValues(emptyList())
+//    }
+//
+//    @Test
+//    fun checkOldYearCategoriesAreFilteredOut() {
+//        val mockResponse = withMockResponse("Category:1970s")
+//        whenever(categoryInterface.searchCategories(
+//            ArgumentMatchers.anyString(),
+//            ArgumentMatchers.anyInt(),
+//            ArgumentMatchers.anyInt()
+//        ))
+//            .thenReturn(Single.just(mockResponse))
+//        categoryClient.searchCategories("19", 10)
+//            .test()
+//            .assertValues(emptyList())
+//    }
+//
+//    @Test
+//    fun checkRecentYearCategoriesAreNotFilteredOut() {
+//        val mockResponse = withMockResponse("Category:2020s")
+//        whenever(categoryInterface.searchCategories(
+//            ArgumentMatchers.anyString(),
+//            ArgumentMatchers.anyInt(),
+//            ArgumentMatchers.anyInt()
+//        ))
+//            .thenReturn(Single.just(mockResponse))
+//        categoryClient.searchCategories("20", 10)
+//            .test()
+//            .assertValues(listOf(CategoryItem("2020s", "", "", false)))
+//    }
+//
+//    @Test
+//    fun checkAllCategoriesWithDateAreNotFilteredOut() {
+//        val mockResponse = withMockResponse("Category:Amavenita (ship, 2014)")
+//        whenever(categoryInterface.searchCategories(
+//            ArgumentMatchers.anyString(),
+//            ArgumentMatchers.anyInt(),
+//            ArgumentMatchers.anyInt()
+//        ))
+//            .thenReturn(Single.just(mockResponse))
+//        categoryClient.searchCategories("Amav", 10)
+//            .test()
+//            .assertValues(listOf(CategoryItem("Amavenita (ship, 2014)", "", "", false)))
+//    }
 
     /**
      * unit test for method CategoriesPresenter.verifyCategories
