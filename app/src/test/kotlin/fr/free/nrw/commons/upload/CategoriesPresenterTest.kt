@@ -146,6 +146,8 @@ class CategoriesPresenterTest {
                     )
                 )
             )
+        whenever(repository.selectedCategories).thenReturn(listOf(
+            categoryItem("Photographs taken randomly", "", "",true)))
 
         categoriesPresenter.searchForCategories("Photo")
         testScheduler.triggerActions()
@@ -153,7 +155,7 @@ class CategoriesPresenterTest {
         verify(view).showError(null)
         verify(view).setCategories(null)
         verify(view).setCategories(listOf(
-            categoryItem("Photographs taken randomly", "", "", false)))
+            categoryItem("Photographs taken randomly", "", "", true)))
         verify(view).showProgress(false)
         verifyNoMoreInteractions(view)
     }
