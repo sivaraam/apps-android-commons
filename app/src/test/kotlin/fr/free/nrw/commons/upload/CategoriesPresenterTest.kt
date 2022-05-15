@@ -3,6 +3,7 @@ package fr.free.nrw.commons.upload
 import categoryItem
 import com.nhaarman.mockitokotlin2.*
 import fr.free.nrw.commons.R
+import fr.free.nrw.commons.category.CategoriesModel
 import fr.free.nrw.commons.category.CategoryItem
 import fr.free.nrw.commons.repository.UploadRepository
 import fr.free.nrw.commons.upload.categories.CategoriesContract
@@ -15,6 +16,8 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.powermock.reflect.Whitebox
 import java.lang.reflect.Method
@@ -121,6 +124,36 @@ class CategoriesPresenterTest {
         verify(view).showProgress(false)
         verify(view).showError(R.string.no_categories_found)
         verifyNoMoreInteractions(view)
+    }
+
+    @Test
+    fun `check filtering out of categories`() {
+        doReturn(Observable.just(
+            listOf(
+                categoryItem("taken on 2014", "Desc", "Thumb", false),
+                categoryItem("test 2014", "Desc", "Thumb", false),
+                categoryItem("japan in 660s", "Desc", "Thumb", false)
+            )
+        ))
+        .`when`(repository)
+        .searchAll(
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any()
+        )
+
+        val categoriesModel = Mockito.mock(CategoriesModel::class.java)
+        `when`(categoriesModel.containsYear(ArgumentMatchers.anyString())).thenCallRealMethod()
+        Whitebox.setInternalState(repository, "categoriesModel", categoriesModel)
+
+        repository.searchAll(
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any()
+        )
+        .map { it.filterNot { categoryItem -> repository.containsYear(categoryItem.name) } }
+        .test()
+        .assertValue(listOf(CategoryItem("test 2014", "Desc", "Thumb", false)))
     }
 
     @Test
