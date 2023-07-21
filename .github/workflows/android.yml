@@ -53,7 +53,11 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: echo "Generated AVD snapshot for caching."
+          script:
+            adb shell content insert --uri content://settings/system --bind name:s:accelerometer_rotation --bind value:i:0
+            adb shell content insert --uri content://settings/system --bind name:s:user_rotation --bind value:i:0
+            adb emu geo fix 37.422131 -122.084801
+            echo "Generated AVD snapshot for caching."
 #
 #      - name: Run Instrumentation tests
 #        if: github.event_name != 'pull_request'
@@ -72,13 +76,7 @@ jobs:
 
       - name: Run Unit tests with unified coverage
         if: github.event_name != 'pull_request'
-        with:
-          api-level: 24
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          profile: Nexus 10
-          script: ./gradlew -Pcoverage testBetaDebugUnitTestUnifiedCoverage --stacktrace
+        run: ./gradlew -Pcoverage testBetaDebugUnitTestUnifiedCoverage --stacktrace
 
       - name: Run Unit tests without unified coverage
         if: github.event_name == 'pull_request'
