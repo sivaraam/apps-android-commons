@@ -415,7 +415,6 @@ class UploadWorker(var appContext: Context, workerParams: WorkerParameters) :
                         Timber.e("Invalid Login, logging out")
                         val username = sessionManager.userName
                         var logoutListener = CommonsApplication.BaseLogoutListener(
-                            null,
                             appContext,
                             appContext.getString(R.string.invalid_login_message),
                             username

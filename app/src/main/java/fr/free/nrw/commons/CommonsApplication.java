@@ -347,7 +347,6 @@ public class CommonsApplication extends MultiDexApplication {
     }
 
     public static class BaseLogoutListener implements CommonsApplication.LogoutListener {
-        Activity activity;
         Context ctx;
         String loginMessage, userName;
 
@@ -355,13 +354,8 @@ public class CommonsApplication extends MultiDexApplication {
             this.ctx = ctx;
         }
 
-        public BaseLogoutListener(final Activity activity, final Context ctx) {
-            this.activity = activity;
-            this.ctx = ctx;
-        }
 
-        public BaseLogoutListener(final Activity activity, final Context ctx, final String loginMessage, final String loginUsername) {
-            this.activity = activity;
+        public BaseLogoutListener(final Context ctx, final String loginMessage, final String loginUsername) {
             this.ctx = ctx;
             this.loginMessage = loginMessage;
             this.userName = loginUsername;
@@ -382,10 +376,27 @@ public class CommonsApplication extends MultiDexApplication {
             }
 
             ctx.startActivity(loginIntent);
+        }
+    }
 
-            if (activity != null) {
-                activity.finish();
-            }
+    public static class ActivityLogoutListener extends BaseLogoutListener {
+        Activity activity;
+
+
+        public ActivityLogoutListener(final Activity activity, final Context ctx) {
+            super(ctx);
+            this.activity = activity;
+        }
+
+        public ActivityLogoutListener(final Activity activity, final Context ctx, final String loginMessage, final String loginUsername) {
+            super(activity, loginMessage, loginUsername);
+            this.activity = activity;
+        }
+
+        @Override
+        public void onLogoutComplete() {
+            super.onLogoutComplete();
+            activity.finish();
         }
     }
 }
